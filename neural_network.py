@@ -118,4 +118,7 @@ with torch.no_grad():
 ps = torch.exp(logps)
 probab = list(ps.cpu().numpy()[0])
 print("Número previsto =", probab.index(max(probab)))
+
+# def testando():
+#     l
 # visualiza_pred(img.view(1, 28, 28), ps)
