@@ -100,24 +100,24 @@ def visualiza_pred(img, ps):
     plt.tight_layout()
 
 
-modelo = Modelo() # inicializa o modelo
+# modelo = Modelo() # inicializa o modelo
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # modelo rodará na GPU se possível
-modelo.to(device)
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # modelo rodará na GPU se possível
+# modelo.to(device)
 
-treino(modelo, trainloader, device)
+# treino(modelo, trainloader, device)
 
-validacao(modelo, valloader, device)
+# validacao(modelo, valloader, device)
 
-imagens, etiquetas = next(iter(valloader))
+# imagens, etiquetas = next(iter(valloader))
 
-img = imagens[0].view(1, 784)
-with torch.no_grad():
-    logps = modelo(img.to(device))
+# img = imagens[0].view(1, 784)
+# with torch.no_grad():
+#     logps = modelo(img.to(device))
 
-ps = torch.exp(logps)
-probab = list(ps.cpu().numpy()[0])
-print("Número previsto =", probab.index(max(probab)))
+# ps = torch.exp(logps)
+# probab = list(ps.cpu().numpy()[0])
+# print("Número previsto =", probab.index(max(probab)))
 
 # def testando():
 #     l
