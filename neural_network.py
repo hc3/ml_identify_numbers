@@ -6,8 +6,11 @@ import torch
 import torch.nn.functional as F  # para utilizar a função de ativação, etc.
 import torchvision  # datasets populares, modelos de arquitetura, e transf. de imagens
 from torch import nn, optim  # optim implementa vários algoritmos de otimização
-from torchvision import (  # transformar de imagens para tensores, etc.
-    datasets, transforms)
+from torchvision import datasets, transforms # transformar de imagens para tensores, etc.
+from PIL import Image
+import matplotlib.pyplot as plt
+
+ENDERECO_DO_MODELO_TREINADO = './db/model_weights.pth'
 
 transform = transforms.ToTensor() #definindo a conversão de imagem para tensor
 
@@ -62,6 +65,21 @@ def treino(modelo, trainloader, device):
         else:
             print("Epoch {} - Perda resultante: {}".format(epoch+1, perda_acumulada/len(trainloader)))
     print("\nTempo de treino (em minutos) =",(time()-inicio)/60)
+    torch.save(modelo, ENDERECO_DO_MODELO_TREINADO)
+
+def coloca_fundo_branco(im):
+    data = np.array(im)
+
+    r1, g1, b1 = 0, 0, 0 # Original value
+    r2, g2, b2 = 255, 255, 255 # Value that we want to replace it with
+
+    red, green, blue = data[:,:,0], data[:,:,1], data[:,:,2]
+    mask = (red == r1) & (green == g1) & (blue == b1)
+    data[:,:,:3][mask] = [r2, g2, b2]
+
+    im = Image.fromarray(data)
+    return im
+    # im.save('fig1_modified.png')
 
 def validacao(modelo, valloader, device):
     conta_corretas, conta_todas = 0, 0
@@ -83,13 +101,13 @@ def validacao(modelo, valloader, device):
 
     print("Total de imagens testadas =", conta_todas)
     print("\nPrecisão do modelo = {}%".format(conta_corretas*100/conta_todas))
+    return conta_corretas*100/conta_todas
 
 def visualiza_pred(img, ps):
-
+    # x = coloca_fundo_branco(img)
     ps = ps.data.cpu().numpy().squeeze()
-
     fig, (ax1, ax2) = plt.subplots(figsize=(6,9), ncols=2)
-    ax1.imshow(img.resize_(1, 28, 28).numpy().squeeze(), cmap='gray_r')
+    ax1.imshow(img.numpy().squeeze(), cmap='gray_r')
     ax1.axis('off')
     ax2.barh(np.arange(10), ps)
     ax2.set_aspect(0.1)
@@ -98,20 +116,60 @@ def visualiza_pred(img, ps):
     ax2.set_title('Palpite')
     ax2.set_xlim(0, 1.1)
     plt.tight_layout()
+    plt.show()
 
 
-# modelo = Modelo() # inicializa o modelo
+modelo = torch.load(ENDERECO_DO_MODELO_TREINADO)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # modelo rodará na GPU se possível
+modelo.to(device)
 
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # modelo rodará na GPU se possível
-# modelo.to(device)
+if not modelo:
+    treino(modelo, trainloader, device)
 
-# treino(modelo, trainloader, device)
+img = Image.open('./my_samples/numero_2_camera_celular.jpeg')
 
+resize_function = transforms.Resize(size = (28,28))
+grayscale = transforms.Grayscale()
+
+img_resize = resize_function(img)
+
+image_em_formato_de_tensor = transform(img_resize)[0].view(1, 784)
+
+with torch.no_grad():
+    logps = modelo(image_em_formato_de_tensor.to(device))
+
+ps = torch.exp(logps)
+probab = list(ps.cpu().numpy()[0])
+
+# print(coloca_fundo_branco(img_resize))
+
+print("Número previsto =", probab.index(max(probab)))
+#print('img resize: ',img_resize)
+#print('images : ',asdasdas)
+#plt.imshow(imgkk.view(1, 28, 28))
+#plt.show()
+visualiza_pred(coloca_fundo_branco(resize_function), ps)
+visualiza_pred(image_em_formato_de_tensor.view(1, 28, 28), ps)
+# print(image_em_formato_de_tensor)
+# plt.imshow(coloca_fundo_branco(img_resize))
+# plt.imshow(img)
+# plt.show()
+# visualiza_pred(image_em_formato_de_tensor.view(1, 28, 28), ps)
+
+# print(image_em_formato_de_tensor)
+# print(img_resize)
+# plt.imshow(image_em_formato_de_tensor.view(1, 28, 28))
+# plt.show()
+# print(image_em_formato_de_tensor)
+# print(next(iter(valloader))[0][0])
 # validacao(modelo, valloader, device)
 
 # imagens, etiquetas = next(iter(valloader))
 
 # img = imagens[0].view(1, 784)
+# plt.imshow(imagens[0].view(1, 28, 28))
+# plt.show()
+# # print(imagens[0])
 # with torch.no_grad():
 #     logps = modelo(img.to(device))
 
@@ -119,6 +177,6 @@ def visualiza_pred(img, ps):
 # probab = list(ps.cpu().numpy()[0])
 # print("Número previsto =", probab.index(max(probab)))
 
-# def testando():
-#     l
-# visualiza_pred(img.view(1, 28, 28), ps)
+# # def testando():
+# #     l
+# # visualiza_pred(img.view(1, 28, 28), ps)
