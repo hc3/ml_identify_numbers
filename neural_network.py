@@ -128,12 +128,19 @@ if not modelo:
 
 img = Image.open('./my_samples/numero_2_camera_celular.jpeg')
 
+# img.show()
+
 resize_function = transforms.Resize(size = (28,28))
+
 grayscale = transforms.Grayscale()
 
 img_resize = resize_function(img)
 
-image_em_formato_de_tensor = transform(img_resize)[0].view(1, 784)
+#img_resize.show()
+
+image_em_formato_de_tensor = transform(grayscale(img_resize))[0].view(1, 784)
+
+image_em_formato_de_tensor = image_em_formato_de_tensor.where(image_em_formato_de_tensor >= 1, image_em_formato_de_tensor * -1)
 
 with torch.no_grad():
     logps = modelo(image_em_formato_de_tensor.to(device))
@@ -148,8 +155,8 @@ print("Número previsto =", probab.index(max(probab)))
 #print('images : ',asdasdas)
 #plt.imshow(imgkk.view(1, 28, 28))
 #plt.show()
-visualiza_pred(coloca_fundo_branco(resize_function), ps)
-visualiza_pred(image_em_formato_de_tensor.view(1, 28, 28), ps)
+#visualiza_pred(coloca_fundo_branco(resize_function), ps)
+visualiza_pred(grayscale(image_em_formato_de_tensor.view(1, 28, 28)), ps)
 # print(image_em_formato_de_tensor)
 # plt.imshow(coloca_fundo_branco(img_resize))
 # plt.imshow(img)
