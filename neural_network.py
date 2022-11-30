@@ -13,8 +13,7 @@ from invert import Invert
 
 ENDERECO_DO_MODELO_TREINADO = './db/model_weights.pth'
 
-transform = transforms.Compose([Invert(),
-                                    transforms.ToTensor(), transforms.Resize(size = (28,28) )])
+transform = transforms.Compose([Invert(), transforms.ToTensor(), transforms.Resize(size = (28,28) )])
 # transform = transforms.ToTensor() #definindo a conversão de imagem para tensor
 
 trainset = datasets.MNIST('./MNIST_data/', download=True, train=True, transform=transform) # Carrega a parte de treino do dataset
@@ -107,7 +106,6 @@ def validacao(modelo, valloader, device):
     return conta_corretas*100/conta_todas
 
 def visualiza_pred(img, ps):
-    # x = coloca_fundo_branco(img)
     ps = ps.data.cpu().numpy().squeeze()
     fig, (ax1, ax2) = plt.subplots(figsize=(6,9), ncols=2)
     ax1.imshow(img.numpy().squeeze(), cmap='gray_r')
@@ -129,17 +127,11 @@ modelo.to(device)
 if not modelo:
     treino(modelo, trainloader, device)
 
-#setGrayScale = transforms.Grayscale()
-#resize_function = transforms.Resize(size = (28,28))
+img = Image.open('./my_samples/numero_1_camera_celular.jpeg')
 
-img = Image.open('./my_samples/numero_2_camera_celular.jpeg')
-#img = setGrayScale(img)
-#img = resize_function(img)
-#img_resize.show()
+img.show()
 
 image_em_formato_de_tensor = transform(img)[0].view(1, 784)
-
-# image_em_formato_de_tensor = image_em_formato_de_tensor.where(image_em_formato_de_tensor >= 1, image_em_formato_de_tensor * 10)
 
 with torch.no_grad():
     logps = modelo(image_em_formato_de_tensor.to(device))
