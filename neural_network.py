@@ -124,10 +124,10 @@ modelo = torch.load(ENDERECO_DO_MODELO_TREINADO)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # modelo rodará na GPU se possível
 modelo.to(device)
 
-if not modelo:
-    treino(modelo, trainloader, device)
 
-img = Image.open('./my_samples/numero_1_camera_celular.jpeg')
+treino(modelo, trainloader, device)
+
+img = Image.open('./my_samples/numero_4_camera_celular.jpeg')
 
 img.show()
 
