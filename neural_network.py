@@ -9,10 +9,13 @@ from torch import nn, optim  # optim implementa vários algoritmos de otimizaç�
 from torchvision import datasets, transforms # transformar de imagens para tensores, etc.
 from PIL import Image
 import matplotlib.pyplot as plt
+from invert import Invert
 
 ENDERECO_DO_MODELO_TREINADO = './db/model_weights.pth'
 
-transform = transforms.ToTensor() #definindo a conversão de imagem para tensor
+transform = transforms.Compose([Invert(),
+                                    transforms.ToTensor(), transforms.Resize(size = (28,28) )])
+# transform = transforms.ToTensor() #definindo a conversão de imagem para tensor
 
 trainset = datasets.MNIST('./MNIST_data/', download=True, train=True, transform=transform) # Carrega a parte de treino do dataset
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True) # Cria um buffer para pegar os dados por partes
@@ -126,21 +129,17 @@ modelo.to(device)
 if not modelo:
     treino(modelo, trainloader, device)
 
+#setGrayScale = transforms.Grayscale()
+#resize_function = transforms.Resize(size = (28,28))
+
 img = Image.open('./my_samples/numero_2_camera_celular.jpeg')
-
-# img.show()
-
-resize_function = transforms.Resize(size = (28,28))
-
-grayscale = transforms.Grayscale()
-
-img_resize = resize_function(img)
-
+#img = setGrayScale(img)
+#img = resize_function(img)
 #img_resize.show()
 
-image_em_formato_de_tensor = transform(grayscale(img_resize))[0].view(1, 784)
+image_em_formato_de_tensor = transform(img)[0].view(1, 784)
 
-image_em_formato_de_tensor = image_em_formato_de_tensor.where(image_em_formato_de_tensor >= 1, image_em_formato_de_tensor * -1)
+# image_em_formato_de_tensor = image_em_formato_de_tensor.where(image_em_formato_de_tensor >= 1, image_em_formato_de_tensor * 10)
 
 with torch.no_grad():
     logps = modelo(image_em_formato_de_tensor.to(device))
@@ -156,7 +155,7 @@ print("Número previsto =", probab.index(max(probab)))
 #plt.imshow(imgkk.view(1, 28, 28))
 #plt.show()
 #visualiza_pred(coloca_fundo_branco(resize_function), ps)
-visualiza_pred(grayscale(image_em_formato_de_tensor.view(1, 28, 28)), ps)
+visualiza_pred(image_em_formato_de_tensor.view(1, 28, 28), ps)
 # print(image_em_formato_de_tensor)
 # plt.imshow(coloca_fundo_branco(img_resize))
 # plt.imshow(img)
